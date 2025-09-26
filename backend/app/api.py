@@ -1,60 +1,78 @@
 # backend/app/api.py
-import os
-import shutil
-import tempfile
+import os, shutil, tempfile
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
+from .openai_client import get_openai_client
+
 from .pdf_parser import extract_text_from_pdf, chunk_text
 from .embeddings import embed_texts
-from .vector_store import engine, insert_document, insert_chunk, similarity_search
-import openai
+from .vector_store import insert_document, insert_chunk, similarity_search
 
 app = FastAPI()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+client = get_openai_client()
+
+CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-4o-mini")
+
+class QueryBody(BaseModel):
+    query: str
+    document_id: Optional[str] = None
+    top_k: int = 5
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDFs allowed")
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-    with open(tmp.name, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-    text = extract_text_from_pdf(tmp.name)
-    if not text.strip():
-        raise HTTPException(status_code=400, detail="PDF contained no extractable text")
-    chunks = chunk_text(text)
-    embeddings = embed_texts(chunks)
-    with engine.begin() as conn:
-        doc_id = insert_document(conn, file.filename)
-        for chunk, emb in zip(chunks, embeddings):
-            insert_chunk(conn, doc_id, chunk, emb, metadata={"source": file.filename})
-    os.unlink(tmp.name)
-    return {"status": "ok", "document_id": str(doc_id), "num_chunks": len(chunks)}
-
-
-class QueryPayload(BaseModel):
-    query: str
-    k: int = 4
+        raise HTTPException(status_code=400, detail="Please upload a PDF")
+    # save to temp
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        tmp_path = tmp.name
+        shutil.copyfileobj(file.file, tmp)
+    try:
+        text = extract_text_from_pdf(tmp_path)
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No extractable text found in PDF")
+        chunks = chunk_text(text, chunk_size=800, overlap=120)
+        doc_id = insert_document(file.filename)
+        embeddings = embed_texts(chunks)
+        for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
+            insert_chunk(
+                doc_id,
+                chunk,
+                {"source": file.filename, "index": i},
+                emb
+            )
+        return {"document_id": doc_id, "chunks": len(chunks), "filename": file.filename}
+    finally:
+        try: os.remove(tmp_path)
+        except Exception: pass
 
 @app.post("/query")
-async def query_documents(payload: QueryPayload):
+def query(payload: QueryBody):
     if not payload.query.strip():
-        raise HTTPException(status_code=400, detail="query cannot be empty")
+        raise HTTPException(status_code=400, detail="Empty query")
     q_emb = embed_texts([payload.query])[0]
-    with engine.connect() as conn:
-        rows = similarity_search(conn, q_emb, k=payload.k)
-    top_texts = [r["chunk_text"] for r in rows]
-    # Compose prompt
-    system_prompt = "You are an assistant that answers questions using the provided document excerpts. Cite the source filename when relevant."
-    user_prompt = f"Excerpts:\n\n{'\n\n'.join(top_texts)}\n\nQuestion: {payload.query}\n\nAnswer concisely and cite sources."
-    resp = openai.ChatCompletion.create(
-        model=os.getenv("CHAT_MODEL", "gpt-4o-mini"),
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        temperature=0.0,
-        max_tokens=500
+    rows = similarity_search(q_emb, k=payload.top_k)
+
+    excerpts = "\n\n".join(
+        f"[{i+1}] {r['chunk_text']}" for i, r in enumerate(rows)
+    ) or "(no context found)"
+
+    system = (
+        "You answer questions about a PDF using only the provided excerpts. "
+        "If the context is insufficient, say so briefly. Cite sources like [1], [2] at the end of sentences."
     )
-    answer = resp["choices"][0]["message"]["content"]
+    user = f"Excerpts:\n\n{excerpts}\n\nQuestion: {payload.query}\n\nAnswer:"
+    resp = client.chat.completions.create(
+        model=CHAT_MODEL,
+        temperature=0.0,
+        max_tokens=500,
+        messages=[{"role": "system", "content": system},
+                  {"role": "user", "content": user}]
+    )
+    answer = resp.choices[0].message.content
     return {"answer": answer, "sources": rows}

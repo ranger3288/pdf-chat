@@ -1,72 +1,38 @@
 # backend/app/vector_store.py
-import os
-import uuid
-from sqlalchemy import create_engine, MetaData, Table, Column, String, JSON, TIMESTAMP, text
-from sqlalchemy.dialects.postgresql import UUID
-from pgvector.sqlalchemy import Vector
+import uuid, math
+from typing import Dict, Any, List
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL environment variable not set")
+DOCUMENTS: Dict[str, Dict[str, Any]] = {}
+CHUNKS: List[Dict[str, Any]] = []
 
-engine = create_engine(DATABASE_URL)
-metadata = MetaData()
+def insert_document(filename: str) -> str:
+    doc_id = str(uuid.uuid4())
+    DOCUMENTS[doc_id] = {"id": doc_id, "filename": filename}
+    return doc_id
 
-documents = Table(
-    "documents", metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-    Column("filename", String),
-    Column("uploaded_at", TIMESTAMP, server_default=text("now()"))
-)
+def insert_chunk(document_id: str, chunk_text: str, metadata: Dict[str, Any], embedding: List[float]) -> str:
+    cid = str(uuid.uuid4())
+    CHUNKS.append({
+        "id": cid,
+        "document_id": document_id,
+        "chunk_text": chunk_text,
+        "metadata": metadata,
+        "embedding": embedding,
+    })
+    return cid
 
-# embedding dimension will depend on model; default to 1536
-EMBED_DIM = int(os.getenv("EMBED_DIM", "1536"))
+def _cosine(a: List[float], b: List[float]) -> float:
+    dot = sum(x*y for x, y in zip(a, b))
+    na = math.sqrt(sum(x*x for x in a)) or 1e-12
+    nb = math.sqrt(sum(y*y for y in b)) or 1e-12
+    return dot / (na * nb)
 
-document_chunks = Table(
-    "document_chunks", metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-    Column("document_id", UUID(as_uuid=True)),
-    Column("chunk_text", String),
-    Column("metadata", JSON),
-    Column("embedding", Vector(EMBED_DIM))
-)
-
-# create tables if they don't exist (simple dev helper)
-metadata.create_all(engine)
-
-
-def insert_document(conn, filename):
-    id = uuid.uuid4()
-    conn.execute(documents.insert().values(id=id, filename=filename))
-    return id
-
-
-def insert_chunk(conn, document_id, text, embedding, metadata_obj=None):
-    conn.execute(document_chunks.insert().values(
-        id=uuid.uuid4(),
-        document_id=document_id,
-        chunk_text=text,
-        metadata=metadata_obj or {},
-        embedding=embedding
-    ))
-
-
-def similarity_search(conn, query_embedding, k=4):
-    # Use the <=> operator (L2) or cosine depending on pgvector config.
-    q = """
-    SELECT id, document_id, chunk_text, metadata, embedding <=> :q AS distance
-    FROM document_chunks
-    ORDER BY embedding <=> :q
-    LIMIT :k
-    """
-    rows = conn.execute(text(q), {"q": query_embedding, "k": k}).fetchall()
-    results = []
-    for r in rows:
-        results.append({
-            "id": str(r[0]),
-            "document_id": str(r[1]),
-            "chunk_text": r[2],
-            "metadata": r[3],
-            "distance": float(r[4])
-        })
-    return results
+def similarity_search(query_embedding: List[float], k: int = 5) -> List[Dict[str, Any]]:
+    scored = [(1 - _cosine(query_embedding, ch["embedding"]), ch) for ch in CHUNKS]
+    scored.sort(key=lambda t: t[0])
+    out = []
+    for dist, ch in scored[:k]:
+        item = {k: v for k, v in ch.items() if k != "embedding"}
+        item["distance"] = float(dist)
+        out.append(item)
+    return out
