@@ -1,53 +1,6 @@
 # PDF Chat - Production-Ready RAG MVP
 
-A production-ready PDF chat application with user authentication, document management, and AI-powered conversations. Built with Next.js, FastAPI, PostgreSQL + pgvector, and Google OAuth.
-
-## 🚀 Features
-
-- **User Authentication**: Google OAuth with NextAuth.js (JWT strategy)
-- **Document Management**: Upload and manage PDF documents per user
-- **AI Chat**: Interactive conversations with document context
-- **Vector Search**: PostgreSQL + pgvector for semantic search
-- **User Isolation**: All data is per-user with proper authorization
-- **Production Ready**: Dockerized with health checks and proper error handling
-- **Deployment Ready**: Vercel (frontend) + Render (backend + DB)
-
-## 🏗️ Architecture
-
-### Frontend (Next.js)
-- **Pages Router**: Dashboard, document view, chat interface
-- **NextAuth.js**: Google OAuth with JWT sessions
-- **Proxy API Routes**: Secure communication with backend
-- **Modern UI**: Clean, accessible interface with loading states
-
-### Backend (FastAPI)
-- **REST API**: Clean, typed endpoints with proper error handling
-- **User Authentication**: Internal secret-based auth from Next.js
-- **Vector Search**: pgvector for semantic similarity search
-- **OpenAI Integration**: text-embedding-3-small + gpt-4o-mini
-
-### Database (PostgreSQL + pgvector)
-- **User Management**: Users, documents, chats, messages
-- **Vector Storage**: 1536-dimensional embeddings
-- **User Isolation**: All queries filtered by user ID
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Next.js 15, TypeScript, NextAuth.js, Lucide React
-- **Backend**: FastAPI, SQLAlchemy, pgvector, OpenAI
-- **Database**: PostgreSQL with pgvector extension
-- **Deployment**: Docker, Vercel, Render
-- **Authentication**: Google OAuth, JWT sessions
-
-## 📋 Prerequisites
-
-- Node.js 20+
-- Python 3.11+
-- Docker & Docker Compose
-- Google Cloud Console account
-- OpenAI API key
-
-## 🚀 Quick Start
+Document Q&A Assistant Built with Next.js, FastAPI, PostgreSQL + pgvector, and Google OAuth.
 
 ### 1. Clone and Setup
 
@@ -129,7 +82,7 @@ npm install
 npm run dev
 ```
 
-## 📚 API Documentation
+## API Documentation
 
 ### Backend API (Base URL: `/api`)
 
