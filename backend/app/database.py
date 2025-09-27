@@ -51,7 +51,7 @@ class DocumentChunk(Base):
     chunk_text = Column(Text, nullable=False)
     chunk_index = Column(Integer, nullable=False)
     chunk_metadata = Column(Text)  # JSON string - renamed to avoid conflict
-    embedding = Column(Vector(1536))  # OpenAI embedding dimension
+    embedding = Column(Vector(384))  # 384-dimensional vector for proper embeddings
     
     # Relationships
     document = relationship("Document", back_populates="chunks")
@@ -91,9 +91,5 @@ def get_db():
         db.close()
 
 def create_tables():
+    # pgvector extension is enabled via init-db.sql
     Base.metadata.create_all(bind=engine)
-    
-    # Enable pgvector extension
-    with engine.connect() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        conn.commit()

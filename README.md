@@ -65,7 +65,7 @@ Create `.env` file in the root directory:
 DATABASE_URL=postgresql://pguser:pgpass@localhost:5432/qnadb
 
 # OpenAI
-OPENAI_API_KEY=your-openai-api-key-here
+HUGGINGFACE_API_KEY=your-huggingface-api-key-here
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000

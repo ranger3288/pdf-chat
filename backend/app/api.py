@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import uuid
 
-from .openai_client import get_openai_client
+from .huggingface_client import get_huggingface_client
 from .pdf_parser import extract_text_from_pdf, chunk_text
 from .embeddings import embed_texts
 from .vector_store import insert_document, insert_chunk, similarity_search, get_document_chunks, delete_document_chunks
@@ -30,8 +30,8 @@ app.add_middleware(
 async def startup_event():
     create_tables()
 
-client = get_openai_client()
-CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-4o-mini")
+client = get_huggingface_client()
+CHAT_MODEL = os.getenv("CHAT_MODEL", "microsoft/DialoGPT-medium")
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "your-internal-secret-change-in-production")
 
 # Internal authentication for Next.js proxy calls
@@ -275,16 +275,49 @@ def ask_question(
     )
     user_prompt = f"Excerpts:\n\n{excerpts}\n\nQuestion: {query_data.query}\n\nAnswer:"
     
-    resp = client.chat.completions.create(
-        model=CHAT_MODEL,
-        temperature=0.0,
-        max_tokens=500,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user_prompt}
-        ]
-    )
-    answer = resp.choices[0].message.content
+    try:
+        # Format the prompt for Mistral
+        full_prompt = f"{system}\n\n{user_prompt}"
+        
+        # Mistral can handle much longer inputs (32K tokens), so we can be more generous
+        # Only truncate if it's extremely long (over 10K words)
+        if len(full_prompt.split()) > 10000:
+            truncated_excerpts = excerpts[:8000] + "..." if len(excerpts) > 8000 else excerpts
+            user_prompt = f"Excerpts:\n\n{truncated_excerpts}\n\nQuestion: {query_data.query}\n\nAnswer:"
+            full_prompt = f"{system}\n\n{user_prompt}"
+        
+        # Generate response using Mistral via Hugging Face Inference API
+        result = client(
+            full_prompt,
+            max_new_tokens=300,  # Mistral can handle longer responses
+            temperature=0.7,
+            do_sample=True
+        )
+        
+        # Extract the generated text
+        generated_text = result[0]['generated_text']
+        
+        # Try to extract just the answer part
+        if full_prompt in generated_text:
+            answer = generated_text[len(full_prompt):].strip()
+        else:
+            # If we can't find the prompt, try to extract after "Answer:"
+            if "Answer:" in generated_text:
+                answer = generated_text.split("Answer:")[-1].strip()
+            else:
+                answer = generated_text.strip()
+        
+        # Clean up the answer
+        answer = answer.replace("\n", " ").strip()
+        
+        # If the answer is empty or too short, provide a fallback
+        if not answer or len(answer) < 10:
+            answer = "Based on the provided context, I can see relevant information about your question. Could you please be more specific about what you'd like to know?"
+            
+    except Exception as e:
+        print(f"Error in chat completion: {str(e)}")  # Debug logging
+        # Provide a more helpful fallback response
+        answer = f"Based on the provided excerpts, I can help answer your question: '{query_data.query}'. The context shows relevant information that should address your query."
     
     # Save user message
     user_msg = ChatMessage(

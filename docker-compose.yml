@@ -7,6 +7,7 @@ services:
       POSTGRES_DB: qnadb
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -19,9 +20,11 @@ services:
     build: ./backend
     environment:
       - DATABASE_URL=postgresql://pguser:pgpass@db:5432/qnadb
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+      - HUGGINGFACE_BASE_URL=${HUGGINGFACE_BASE_URL:-https://api-inference.huggingface.co}
       - INTERNAL_API_SECRET=${INTERNAL_API_SECRET:-your-internal-secret-change-in-production}
-      - CHAT_MODEL=${CHAT_MODEL:-gpt-4o-mini}
+      - CHAT_MODEL=${CHAT_MODEL:-microsoft/Phi-3.5-mini-instruct}
+      - EMBED_MODEL=${EMBED_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
     depends_on:
       db:
         condition: service_healthy

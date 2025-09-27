@@ -35,34 +35,30 @@ def insert_chunk(db: Session, document_id: str, chunk_text: str, metadata: Dict[
 
 def similarity_search(db: Session, query_embedding: List[float], document_id: str = None, k: int = 5) -> List[Dict[str, Any]]:
     """Search for similar chunks using pgvector"""
+    # Convert embedding to string format for PostgreSQL
+    embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
+    
     if document_id:
-        # Search within specific document
-        query = text("""
+        # Search within specific document using f-string (simpler approach)
+        query_str = f"""
             SELECT id, document_id, chunk_text, chunk_metadata, 
-                   1 - (embedding <=> :query_embedding) as similarity
+                   1 - (embedding <=> '{embedding_str}'::vector) as similarity
             FROM document_chunks 
-            WHERE document_id = :document_id
-            ORDER BY embedding <=> :query_embedding
-            LIMIT :k
-        """)
-        result = db.execute(query, {
-            "query_embedding": query_embedding,
-            "document_id": document_id,
-            "k": k
-        })
+            WHERE document_id = '{document_id}'
+            ORDER BY embedding <=> '{embedding_str}'::vector
+            LIMIT {k}
+        """
+        result = db.execute(text(query_str))
     else:
         # Search across all documents
-        query = text("""
+        query_str = f"""
             SELECT id, document_id, chunk_text, chunk_metadata,
-                   1 - (embedding <=> :query_embedding) as similarity
+                   1 - (embedding <=> '{embedding_str}'::vector) as similarity
             FROM document_chunks
-            ORDER BY embedding <=> :query_embedding
-            LIMIT :k
-        """)
-        result = db.execute(query, {
-            "query_embedding": query_embedding,
-            "k": k
-        })
+            ORDER BY embedding <=> '{embedding_str}'::vector
+            LIMIT {k}
+        """
+        result = db.execute(text(query_str))
     
     chunks = []
     for row in result:

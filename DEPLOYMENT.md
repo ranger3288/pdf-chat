@@ -52,8 +52,8 @@ In your Render web service, add these environment variables:
 # Database (Render will provide this)
 DATABASE_URL=postgresql://user:pass@host:port/dbname
 
-# OpenAI
-OPENAI_API_KEY=your-openai-api-key
+# Hugging Face
+HUGGINGFACE_API_KEY=your-huggingface-api-key
 
 # Internal API Secret
 INTERNAL_API_SECRET=your-secure-random-secret-here

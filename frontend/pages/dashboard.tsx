@@ -190,11 +190,7 @@ export default function Dashboard() {
                     borderRadius: '8px',
                     cursor: 'pointer',
                     backgroundColor: 'white',
-                    transition: 'all 0.2s',
-                    ':hover': {
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                      transform: 'translateY(-2px)'
-                    }
+                    transition: 'all 0.2s'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'

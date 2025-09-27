@@ -17,16 +17,16 @@ export default NextAuth({
         token.googleAccessToken = account.access_token
         token.email = profile.email
         token.name = profile.name
-        token.picture = profile.picture
+        token.picture = (profile as any).picture
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
-        session.googleAccessToken = token.googleAccessToken
-        session.user.email = token.email
-        session.user.name = token.name
-        session.user.image = token.picture
+        session.googleAccessToken = token.googleAccessToken as string
+        session.user.email = token.email as string
+        session.user.name = token.name as string
+        session.user.image = token.picture as string
       }
       return session
     },
