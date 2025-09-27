@@ -74,3 +74,4 @@ Thumbs.db
 .idea/
 .vscode/
 *.code-workspace
+next-env.d.ts
