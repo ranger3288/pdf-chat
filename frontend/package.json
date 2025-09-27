@@ -1,5 +1,5 @@
 {
-    "name": "doc-qna-frontend",
+    "name": "pdf-chat-frontend",
     "version": "1.0.0",
     "private": true,
     "scripts": {
@@ -10,7 +10,10 @@
     "dependencies": {
         "next": "^15.5.4",
         "react": "18.2.0",
-        "react-dom": "18.2.0"
+        "react-dom": "18.2.0",
+        "next-auth": "^4.24.5",
+        "axios": "^1.6.2",
+        "lucide-react": "^0.294.0"
     },
     "devDependencies": {
         "@types/node": "^20.19.17",

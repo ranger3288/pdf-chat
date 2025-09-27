@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     environment:
       POSTGRES_USER: pguser
       POSTGRES_PASSWORD: pgpass
@@ -9,20 +9,43 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pguser -d qnadb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
-    env_file:
-      - .env
+    environment:
+      - DATABASE_URL=postgresql://pguser:pgpass@db:5432/qnadb
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET:-your-internal-secret-change-in-production}
+      - CHAT_MODEL=${CHAT_MODEL:-gpt-4o-mini}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   frontend:
     build: ./frontend
+    environment:
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - BACKEND_URL=http://backend:8000
+      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET:-your-internal-secret-change-in-production}
+    depends_on:
+      - backend
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules  
+
 volumes:
   db_data:

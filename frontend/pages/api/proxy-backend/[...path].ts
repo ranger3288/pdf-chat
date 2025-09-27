@@ -1,44 +1,38 @@
-// frontend/pages/api/proxy-upload.ts
+// frontend/pages/api/proxy-backend/[...path].ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
-
   try {
     const session = await getServerSession(req, res, {})
     if (!session?.user?.email) {
       return res.status(401).json({ message: 'Unauthorized' })
     }
 
+    const { path } = req.query
+    const pathArray = Array.isArray(path) ? path : [path]
+    const backendPath = pathArray.join('/')
+
     const backend = process.env.BACKEND_URL || 'http://localhost:8000'
-    const url = `${backend}/api/upload`
+    const url = `${backend}/api/${backendPath}`
     
     // Forward the request with proper headers
     const response = await fetch(url, {
-      method: 'POST',
+      method: req.method,
       headers: {
+        'Content-Type': 'application/json',
         'X-User-Email': session.user.email,
         'X-User-Name': session.user.name || 'Unknown User',
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || 'your-internal-secret-change-in-production',
-        // Don't set content-type for multipart, let fetch handle it
       },
-      body: req.body
+      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
     })
     
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Backend upload error:', response.status, errorText)
+      console.error('Backend error:', response.status, errorText)
       return res.status(response.status).json({ 
-        detail: errorText || 'Upload failed',
+        detail: errorText || 'Request failed',
         status: response.status 
       })
     }
@@ -46,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await response.json()
     res.status(response.status).json(data)
   } catch (error) {
-    console.error('Upload proxy error:', error)
+    console.error('Proxy error:', error)
     res.status(500).json({ message: 'Internal server error' })
   }
 }
