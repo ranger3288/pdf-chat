@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import uuid
 
-from .huggingface_client import get_huggingface_client
+from .openai_client import get_openai_client
 from .pdf_parser import extract_text_from_pdf, chunk_text
 from .embeddings import embed_texts
 from .vector_store import insert_document, insert_chunk, similarity_search, get_document_chunks, delete_document_chunks
@@ -30,8 +30,8 @@ app.add_middleware(
 async def startup_event():
     create_tables()
 
-client = get_huggingface_client()
-CHAT_MODEL = os.getenv("CHAT_MODEL", "microsoft/DialoGPT-medium")
+client = get_openai_client()
+CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-3.5-turbo")
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "your-internal-secret-change-in-production")
 
 # Internal authentication for Next.js proxy calls
@@ -269,43 +269,29 @@ def ask_question(
         f"[{i+1}] {r['chunk_text']}" for i, r in enumerate(top_rows)
     ) or "(no context found)"
 
-    system = (
-        "You answer questions about PDF documents using only the provided excerpts. "
-        "If the context is insufficient, say so briefly. Cite sources like [1], [2] at the end of sentences."
+    system_prompt = (
+        "You are a helpful assistant that answers questions about PDF documents using only the provided excerpts. "
+        "If the context is insufficient, say so briefly. Cite sources like [1], [2] at the end of sentences. "
+        "Be concise but comprehensive in your answers."
     )
-    user_prompt = f"Excerpts:\n\n{excerpts}\n\nQuestion: {query_data.query}\n\nAnswer:"
+    
+    user_prompt = f"Here are relevant excerpts from the document:\n\n{excerpts}\n\nQuestion: {query_data.query}"
     
     try:
-        # Format the prompt for Mistral
-        full_prompt = f"{system}\n\n{user_prompt}"
+        # Truncate if extremely long (OpenAI has token limits)
+        if len(user_prompt.split()) > 8000:
+            truncated_excerpts = excerpts[:6000] + "..."
+            user_prompt = f"Here are relevant excerpts from the document:\n\n{truncated_excerpts}\n\nQuestion: {query_data.query}"
         
-        # Mistral can handle much longer inputs (32K tokens), so we can be more generous
-        # Only truncate if it's extremely long (over 10K words)
-        if len(full_prompt.split()) > 10000:
-            truncated_excerpts = excerpts[:8000] + "..." if len(excerpts) > 8000 else excerpts
-            user_prompt = f"Excerpts:\n\n{truncated_excerpts}\n\nQuestion: {query_data.query}\n\nAnswer:"
-            full_prompt = f"{system}\n\n{user_prompt}"
-        
-        # Generate response using Mistral via Hugging Face Inference API
+        # Generate response using OpenAI
         result = client(
-            full_prompt,
-            max_new_tokens=300,  # Mistral can handle longer responses
-            temperature=0.7,
-            do_sample=True
+            f"System: {system_prompt}\n\nUser: {user_prompt}",
+            max_tokens=500,  # OpenAI tokens
+            temperature=0.7
         )
         
         # Extract the generated text
-        generated_text = result[0]['generated_text']
-        
-        # Try to extract just the answer part
-        if full_prompt in generated_text:
-            answer = generated_text[len(full_prompt):].strip()
-        else:
-            # If we can't find the prompt, try to extract after "Answer:"
-            if "Answer:" in generated_text:
-                answer = generated_text.split("Answer:")[-1].strip()
-            else:
-                answer = generated_text.strip()
+        answer = result[0]['generated_text'].strip()
         
         # Clean up the answer
         answer = answer.replace("\n", " ").strip()
