@@ -169,6 +169,47 @@ def get_document_chats(
         for chat in chats
     ]
 
+@app.delete("/api/documents/{document_id}")
+def delete_document(
+    document_id: str,
+    _: bool = Depends(verify_internal_auth),
+    user: User = Depends(get_user_from_headers),
+    db: Session = Depends(get_db)
+):
+    """Delete a document and all associated chats and chunks"""
+    # Verify document belongs to user
+    document = db.query(Document).filter(
+        Document.id == document_id,
+        Document.user_id == user.id
+    ).first()
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Delete all chat messages for chats associated with this document
+    chat_sessions = db.query(ChatSession).filter(
+        ChatSession.document_id == document_id,
+        ChatSession.user_id == user.id
+    ).all()
+    
+    for chat in chat_sessions:
+        db.query(ChatMessage).filter(ChatMessage.session_id == chat.id).delete()
+    
+    # Delete all chat sessions for this document
+    db.query(ChatSession).filter(
+        ChatSession.document_id == document_id,
+        ChatSession.user_id == user.id
+    ).delete()
+    
+    # Delete all document chunks
+    delete_document_chunks(db, document_id)
+    
+    # Delete the document itself
+    db.delete(document)
+    db.commit()
+    
+    return {"message": "Document and all associated data deleted successfully"}
+
 @app.post("/api/chats")
 def create_chat(
     chat_data: ChatCreate,
@@ -234,6 +275,32 @@ def get_chat_messages(
         }
         for msg in messages
     ]
+
+@app.delete("/api/chats/{chat_id}")
+def delete_chat(
+    chat_id: str,
+    _: bool = Depends(verify_internal_auth),
+    user: User = Depends(get_user_from_headers),
+    db: Session = Depends(get_db)
+):
+    """Delete a chat and all its messages"""
+    # Verify chat belongs to user
+    chat = db.query(ChatSession).filter(
+        ChatSession.id == chat_id,
+        ChatSession.user_id == user.id
+    ).first()
+    
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    
+    # Delete all messages for this chat
+    db.query(ChatMessage).filter(ChatMessage.session_id == chat_id).delete()
+    
+    # Delete the chat session
+    db.delete(chat)
+    db.commit()
+    
+    return {"message": "Chat and all associated messages deleted successfully"}
 
 @app.post("/api/chats/{chat_id}/ask")
 def ask_question(

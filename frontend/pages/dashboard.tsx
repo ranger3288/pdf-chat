@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
-import { Upload, FileText, LogOut, User } from 'lucide-react'
+import { Upload, FileText, LogOut, User, Trash2 } from 'lucide-react'
 
 interface Document {
   id: string
@@ -67,6 +67,21 @@ export default function Dashboard() {
 
   function goToDocument(documentId: string) {
     router.push(`/doc/${documentId}`)
+  }
+
+  async function deleteDocument(documentId: string, filename: string) {
+    if (!confirm(`Are you sure you want to delete "${filename}"? This will also delete all associated chat sessions.`)) {
+      return
+    }
+    
+    try {
+      await axios.delete(`/api/proxy-backend/documents/${documentId}`)
+      loadDocuments() // Refresh documents list
+      alert(`Document "${filename}" deleted successfully!`)
+    } catch (error: any) {
+      console.error('Delete error:', error)
+      alert(`Delete failed: ${error.response?.data?.detail || error.message}`)
+    }
   }
 
   if (status === 'loading') {
@@ -183,14 +198,13 @@ export default function Dashboard() {
               {documents.map(doc => (
                 <div 
                   key={doc.id}
-                  onClick={() => goToDocument(doc.id)}
                   style={{
                     padding: '1rem',
                     border: '1px solid #e0e0e0',
                     borderRadius: '8px',
-                    cursor: 'pointer',
                     backgroundColor: 'white',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    position: 'relative'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'
@@ -201,12 +215,51 @@ export default function Dashboard() {
                     e.currentTarget.style.transform = 'translateY(0)'
                   }}
                 >
-                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#333' }}>
-                    {doc.filename}
+                  <div 
+                    onClick={() => goToDocument(doc.id)}
+                    style={{
+                      cursor: 'pointer',
+                      marginBottom: '0.5rem'
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#333' }}>
+                      {doc.filename}
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                      Uploaded {new Date(doc.created_at).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                    Uploaded {new Date(doc.created_at).toLocaleDateString()}
-                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteDocument(doc.id, doc.filename)
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '0.5rem',
+                      right: '0.5rem',
+                      padding: '0.25rem',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0.8,
+                      transition: 'opacity 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.8'
+                    }}
+                    title="Delete document"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               ))}
             </div>

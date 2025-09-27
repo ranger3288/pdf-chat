@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
-import { MessageSquare, Plus, ArrowLeft } from 'lucide-react'
+import { MessageSquare, Plus, ArrowLeft, Trash2 } from 'lucide-react'
 
 interface Chat {
   id: string
@@ -66,6 +66,21 @@ export default function DocumentPage() {
 
   function goToChat(chatId: string) {
     router.push(`/chat/${chatId}`)
+  }
+
+  async function deleteChat(chatId: string, chatTitle: string) {
+    if (!confirm(`Are you sure you want to delete "${chatTitle}"? This will delete all messages in this chat.`)) {
+      return
+    }
+    
+    try {
+      await axios.delete(`/api/proxy-backend/chats/${chatId}`)
+      loadChats() // Refresh chats list
+      alert(`Chat "${chatTitle}" deleted successfully!`)
+    } catch (error: any) {
+      console.error('Delete error:', error)
+      alert(`Delete failed: ${error.response?.data?.detail || error.message}`)
+    }
   }
 
   if (status === 'loading') {
@@ -179,14 +194,13 @@ export default function DocumentPage() {
               {chats.map(chat => (
                 <div 
                   key={chat.id}
-                  onClick={() => goToChat(chat.id)}
                   style={{
                     padding: '1rem',
                     border: '1px solid #e0e0e0',
                     borderRadius: '8px',
-                    cursor: 'pointer',
                     backgroundColor: 'white',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    position: 'relative'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#f8f9fa'
@@ -197,12 +211,51 @@ export default function DocumentPage() {
                     e.currentTarget.style.borderColor = '#e0e0e0'
                   }}
                 >
-                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: '#333' }}>
-                    {chat.title}
+                  <div 
+                    onClick={() => goToChat(chat.id)}
+                    style={{
+                      cursor: 'pointer',
+                      marginBottom: '0.25rem'
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: '#333' }}>
+                      {chat.title}
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                      Created {new Date(chat.created_at).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                    Created {new Date(chat.created_at).toLocaleDateString()}
-                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteChat(chat.id, chat.title)
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '0.5rem',
+                      right: '0.5rem',
+                      padding: '0.25rem',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0.8,
+                      transition: 'opacity 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.8'
+                    }}
+                    title="Delete chat"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               ))}
             </div>

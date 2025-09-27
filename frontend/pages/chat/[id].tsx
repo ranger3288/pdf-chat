@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
-import { ArrowLeft, Send, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Send, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 
 interface Message {
   id: string
@@ -108,6 +108,21 @@ export default function ChatPage() {
     }
   }
 
+  async function deleteChat() {
+    if (!confirm('Are you sure you want to delete this chat? This will delete all messages in this chat.')) {
+      return
+    }
+    
+    try {
+      await axios.delete(`/api/proxy-backend/chats/${chatId}`)
+      alert('Chat deleted successfully!')
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('Delete error:', error)
+      alert(`Delete failed: ${error.response?.data?.detail || error.message}`)
+    }
+  }
+
   if (status === 'loading') {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -156,6 +171,25 @@ export default function ChatPage() {
           </button>
           <h1 style={{ margin: 0, color: '#333' }}>Chat</h1>
         </div>
+        
+        <button
+          onClick={deleteChat}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#f44336',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+          title="Delete this chat"
+        >
+          <Trash2 size={16} />
+          Delete Chat
+        </button>
         
         {sources.length > 0 && (
           <button
