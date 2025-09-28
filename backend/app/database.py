@@ -91,5 +91,10 @@ def get_db():
         db.close()
 
 def create_tables():
-    # pgvector extension is enabled via init-db.sql
+    # Enable pgvector extension first
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
+    
+    # Create all tables
     Base.metadata.create_all(bind=engine)
