@@ -40,7 +40,12 @@ app.add_middleware(
 # Create tables on startup
 @app.on_event("startup")
 async def startup_event():
-    create_tables()
+    try:
+        create_tables()
+        print("✅ Database tables created successfully")
+    except Exception as e:
+        print(f"⚠️  Warning: Could not create database tables: {e}")
+        print("This may be normal if the database is not yet available.")
 
 client = get_openai_client()
 CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-3.5-turbo")
@@ -83,7 +88,11 @@ class ChatCreate(BaseModel):
 
 @app.get("/api/healthz")
 def health():
-    return {"ok": True}
+    return {"ok": True, "status": "healthy"}
+
+@app.get("/")
+def root():
+    return {"message": "PDF Chat API is running", "status": "ok"}
 
 @app.post("/api/upload")
 async def upload_pdf(
