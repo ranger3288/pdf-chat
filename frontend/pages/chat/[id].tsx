@@ -22,6 +22,13 @@ interface ChatResponse {
   sources: Source[]
 }
 
+interface ChatDetails {
+  id: string
+  title: string
+  document_id: string
+  created_at: string
+}
+
 export default function ChatPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -31,6 +38,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false)
   const [sources, setSources] = useState<Source[]>([])
   const [showSources, setShowSources] = useState(false)
+  const [documentId, setDocumentId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Redirect if not authenticated
@@ -40,9 +48,10 @@ export default function ChatPage() {
     }
   }, [status, router])
 
-  // Load messages when chat ID is available
+  // Load chat details and messages when chat ID is available
   useEffect(() => {
     if (chatId && session) {
+      loadChatDetails()
       loadMessages()
     }
   }, [chatId, session])
@@ -51,6 +60,17 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  async function loadChatDetails() {
+    try {
+      const response = await axios.get(`/api/proxy-backend/chat-details/${chatId}`)
+      const chatDetails: ChatDetails = response.data
+      console.log('Loaded chat details:', chatDetails)
+      setDocumentId(chatDetails.document_id)
+    } catch (error) {
+      console.error('Failed to load chat details:', error)
+    }
+  }
 
   async function loadMessages() {
     try {
@@ -114,9 +134,16 @@ export default function ChatPage() {
     }
     
     try {
+      console.log('Deleting chat:', chatId)
       await axios.delete(`/api/proxy-backend/chats/${chatId}`)
       alert('Chat deleted successfully!')
-      router.push('/dashboard')
+      console.log('Delete successful, documentId:', documentId)
+      if (documentId) {
+        router.push(`/doc/${documentId}`)
+      } else {
+        console.log('Document ID not available, going to dashboard')
+        router.push('/dashboard')
+      }
     } catch (error: any) {
       console.error('Delete error:', error)
       alert(`Delete failed: ${error.response?.data?.detail || error.message}`)
@@ -154,20 +181,30 @@ export default function ChatPage() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button 
-            onClick={() => router.push('/dashboard')}
+            onClick={() => {
+              console.log('Back button clicked, documentId:', documentId)
+              if (documentId) {
+                router.push(`/doc/${documentId}`)
+              } else {
+                console.log('Document ID not available, going to dashboard')
+                router.push('/dashboard')
+              }
+            }}
+            disabled={!documentId}
             style={{
               padding: '8px',
               backgroundColor: 'transparent',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              cursor: 'pointer',
+              cursor: documentId ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              opacity: documentId ? 1 : 0.6
             }}
           >
             <ArrowLeft size={16} />
-            Back to Dashboard
+            {documentId ? 'Back to Document Chats' : 'Loading...'}
           </button>
           <h1 style={{ margin: 0, color: '#333' }}>Chat</h1>
         </div>

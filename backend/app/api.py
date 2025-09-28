@@ -246,6 +246,29 @@ def create_chat(
         "created_at": chat.created_at.isoformat()
     }
 
+@app.get("/api/chat-details/{chat_id}")
+def get_chat_details(
+    chat_id: str,
+    _: bool = Depends(verify_internal_auth),
+    user: User = Depends(get_user_from_headers),
+    db: Session = Depends(get_db)
+):
+    """Get chat details including document_id"""
+    chat = db.query(ChatSession).filter(
+        ChatSession.id == chat_id,
+        ChatSession.user_id == user.id
+    ).first()
+    
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    
+    return {
+        "id": str(chat.id),
+        "title": chat.title,
+        "document_id": str(chat.document_id),
+        "created_at": chat.created_at.isoformat()
+    }
+
 @app.get("/api/chats/{chat_id}/messages")
 def get_chat_messages(
     chat_id: str,
