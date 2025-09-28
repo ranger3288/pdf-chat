@@ -23,6 +23,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Save theme preference to localStorage
     localStorage.setItem('theme', theme)
+    
+    // Apply theme to body element to prevent white borders
+    const colors = theme === 'light' 
+      ? { primary: '#ffffff', secondary: '#f5f5f5', text: '#333333' }
+      : { primary: '#1a1a1a', secondary: '#2d2d2d', text: '#e5e5e5' }
+    
+    document.body.style.backgroundColor = colors.secondary
+    document.body.style.color = colors.text
+    document.documentElement.style.backgroundColor = colors.secondary
+    
+    // Ensure no white borders
+    document.body.style.margin = '0'
+    document.body.style.padding = '0'
+    document.documentElement.style.margin = '0'
+    document.documentElement.style.padding = '0'
   }, [theme])
 
   const toggleTheme = () => {
