@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: pdf-chat-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    rootDir: ./backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pdf-chat-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: INTERNAL_API_SECRET
+        generateValue: true
+      - key: CHAT_MODEL
+        value: gpt-4o-mini
+      - key: EMBED_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+
+  - type: pserv
+    name: pdf-chat-db
+    env: postgresql
+    plan: free
+    databaseName: qnadb
+    user: pguser

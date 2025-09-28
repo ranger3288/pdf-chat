@@ -157,44 +157,56 @@ CREATE TABLE chat_messages (
 
 ## 🚀 Deployment
 
-### Vercel (Frontend)
+### Quick Start
 
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Render (Backend + Database)
-
-1. Create a new Web Service on Render
-2. Connect your GitHub repository
-3. Set build command: `pip install -r app/requirements.txt`
-4. Set start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Add PostgreSQL database (Managed)
-6. Set environment variables
-
-### Environment Variables for Production
+Use the automated deployment script:
 
 ```bash
-# Database (Render will provide this)
-DATABASE_URL=postgresql://user:pass@host:port/dbname
-
-# OpenAI
-OPENAI_API_KEY=your-openai-api-key
-
-# NextAuth
-NEXTAUTH_URL=https://yourdomain.vercel.app
-NEXTAUTH_SECRET=your-nextauth-secret
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# Internal API Secret
-INTERNAL_API_SECRET=your-internal-secret
-
-# Backend URL
-BACKEND_URL=https://your-backend.onrender.com
+./deploy.sh
 ```
+
+This will guide you through deploying to both Render and Vercel.
+
+### Manual Deployment
+
+#### Vercel (Frontend)
+
+1. Go to [Vercel](https://vercel.com/) and sign up with GitHub
+2. Click "New Project" and import your repository
+3. Configure:
+   - **Framework Preset**: Next.js
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.next`
+4. Set environment variables (see `ENVIRONMENT_VARIABLES.md`)
+5. Deploy!
+
+#### Render (Backend + Database)
+
+1. Go to [Render](https://render.com/) and sign up with GitHub
+2. Create a new Web Service:
+   - **Name**: `pdf-chat-backend`
+   - **Root Directory**: `backend`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Python Version**: `3.11`
+3. Add PostgreSQL database:
+   - **Name**: `pdf-chat-db`
+   - **Database**: `qnadb`
+   - **User**: `pguser`
+4. Set environment variables (see `ENVIRONMENT_VARIABLES.md`)
+5. Deploy!
+
+### Environment Variables
+
+See `ENVIRONMENT_VARIABLES.md` for detailed configuration instructions.
+
+### Post-Deployment
+
+1. Update Google OAuth redirect URIs with your production URLs
+2. Test the full application flow
+3. Monitor logs for any issues
+4. Set up monitoring and alerts
 
 ## 🔧 Configuration
 

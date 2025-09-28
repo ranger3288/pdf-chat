@@ -17,11 +17,23 @@ from .database import get_db, User, Document, ChatSession, ChatMessage, create_t
 app = FastAPI()
 
 # Enable CORS
+allowed_origins = [
+    "http://localhost:3000",  # Local development
+    "https://*.vercel.app",   # Vercel deployments
+    "https://pdf-chat.vercel.app",  # Production domain
+]
+
+# Add dynamic origins for Vercel preview deployments
+if os.getenv("VERCEL_ENV") == "preview":
+    vercel_url = os.getenv("VERCEL_URL")
+    if vercel_url:
+        allowed_origins.append(f"https://{vercel_url}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this properly for production
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
