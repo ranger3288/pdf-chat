@@ -3,6 +3,11 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import { ArrowLeft, Send, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import ConfirmationModal from '../../components/ConfirmationModal'
+import { ToastContainer } from '../../components/Toast'
+import { useToast } from '../../hooks/useToast'
+import { useTheme } from '../../contexts/ThemeContext'
+import { getThemeColors } from '../../utils/theme'
 
 interface Message {
   id: string
@@ -32,6 +37,8 @@ interface ChatDetails {
 export default function ChatPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { theme } = useTheme()
+  const colors = getThemeColors(theme)
   const { id: chatId } = router.query
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -39,7 +46,10 @@ export default function ChatPage() {
   const [sources, setSources] = useState<Source[]>([])
   const [showSources, setShowSources] = useState(false)
   const [documentId, setDocumentId] = useState<string | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { toasts, removeToast, showSuccess, showError } = useToast()
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -115,7 +125,7 @@ export default function ChatPage() {
       setSources(chatResponse.sources)
     } catch (error: any) {
       console.error('Failed to send message:', error)
-      alert(`Failed to send message: ${error.response?.data?.detail || error.message}`)
+      showError('Failed to send message', error.response?.data?.detail || error.message)
     } finally {
       setLoading(false)
     }
@@ -128,15 +138,16 @@ export default function ChatPage() {
     }
   }
 
-  async function deleteChat() {
-    if (!confirm('Are you sure you want to delete this chat? This will delete all messages in this chat.')) {
-      return
-    }
-    
+  function handleDeleteClick() {
+    setShowDeleteModal(true)
+  }
+
+  async function confirmDelete() {
+    setIsDeleting(true)
     try {
       console.log('Deleting chat:', chatId)
       await axios.delete(`/api/proxy-backend/chats/${chatId}`)
-      alert('Chat deleted successfully!')
+      showSuccess('Chat deleted successfully!')
       console.log('Delete successful, documentId:', documentId)
       if (documentId) {
         router.push(`/doc/${documentId}`)
@@ -146,7 +157,10 @@ export default function ChatPage() {
       }
     } catch (error: any) {
       console.error('Delete error:', error)
-      alert(`Delete failed: ${error.response?.data?.detail || error.message}`)
+      showError('Delete failed', error.response?.data?.detail || error.message)
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteModal(false)
     }
   }
 
@@ -167,13 +181,14 @@ export default function ChatPage() {
       height: '100vh', 
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: 'system-ui, sans-serif'
+      fontFamily: 'system-ui, sans-serif',
+      backgroundColor: colors.secondary
     }}>
       {/* Header */}
       <header style={{
-        backgroundColor: 'white',
+        backgroundColor: colors.primary,
         padding: '1rem 2rem',
-        borderBottom: '1px solid #e0e0e0',
+        borderBottom: `1px solid ${colors.border}`,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -194,26 +209,27 @@ export default function ChatPage() {
             style={{
               padding: '8px',
               backgroundColor: 'transparent',
-              border: '1px solid #ddd',
+              border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               cursor: documentId ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              opacity: documentId ? 1 : 0.6
+              opacity: documentId ? 1 : 0.6,
+              color: colors.textPrimary
             }}
           >
             <ArrowLeft size={16} />
             {documentId ? 'Back to Document Chats' : 'Loading...'}
           </button>
-          <h1 style={{ margin: 0, color: '#333' }}>Chat</h1>
+          <h1 style={{ margin: 0, color: colors.textPrimary }}>Chat</h1>
         </div>
         
         <button
-          onClick={deleteChat}
+          onClick={handleDeleteClick}
           style={{
             padding: '8px 12px',
-            backgroundColor: '#f44336',
+            backgroundColor: colors.error,
             color: 'white',
             border: 'none',
             borderRadius: '4px',
@@ -283,7 +299,7 @@ export default function ChatPage() {
         flex: 1,
         overflowY: 'auto',
         padding: '1rem 2rem',
-        backgroundColor: '#f5f5f5'
+        backgroundColor: colors.secondary
       }}>
         {messages.length === 0 ? (
           <div style={{ 
@@ -291,7 +307,7 @@ export default function ChatPage() {
             justifyContent: 'center', 
             alignItems: 'center', 
             height: '100%',
-            color: '#666'
+            color: colors.textSecondary
           }}>
             Start a conversation by asking a question about the document
           </div>
@@ -311,8 +327,8 @@ export default function ChatPage() {
                     maxWidth: '70%',
                     padding: '0.75rem 1rem',
                     borderRadius: '12px',
-                    backgroundColor: message.role === 'user' ? '#4285f4' : 'white',
-                    color: message.role === 'user' ? 'white' : '#333',
+                    backgroundColor: message.role === 'user' ? colors.userMessage : colors.assistantMessage,
+                    color: message.role === 'user' ? colors.messageTextUser : colors.messageText,
                     boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
                     wordWrap: 'break-word'
                   }}
@@ -334,8 +350,8 @@ export default function ChatPage() {
                 <div style={{
                   padding: '0.75rem 1rem',
                   borderRadius: '12px',
-                  backgroundColor: 'white',
-                  color: '#666',
+                  backgroundColor: colors.assistantMessage,
+                  color: colors.textSecondary,
                   boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
                 }}>
                   Thinking...
@@ -350,8 +366,8 @@ export default function ChatPage() {
       {/* Input */}
       <div style={{
         padding: '1rem 2rem',
-        backgroundColor: 'white',
-        borderTop: '1px solid #e0e0e0',
+        backgroundColor: colors.primary,
+        borderTop: `1px solid ${colors.border}`,
         flexShrink: 0
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: '1rem' }}>
@@ -364,13 +380,15 @@ export default function ChatPage() {
             style={{
               flex: 1,
               padding: '0.75rem',
-              border: '1px solid #ddd',
+              border: `1px solid ${colors.border}`,
               borderRadius: '8px',
               resize: 'none',
               minHeight: '40px',
               maxHeight: '120px',
               fontFamily: 'inherit',
-              fontSize: '16px'
+              fontSize: '16px',
+              backgroundColor: colors.primary,
+              color: colors.textPrimary
             }}
           />
           <button
@@ -378,7 +396,7 @@ export default function ChatPage() {
             disabled={loading || !inputValue.trim()}
             style={{
               padding: '0.75rem 1rem',
-              backgroundColor: inputValue.trim() && !loading ? '#4285f4' : '#ccc',
+              backgroundColor: inputValue.trim() && !loading ? colors.userMessage : colors.textMuted,
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -393,6 +411,22 @@ export default function ChatPage() {
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Chat"
+        message="Are you sure you want to delete this chat? This will delete all messages in this chat and cannot be undone."
+        confirmText="Delete Chat"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   )
 }
