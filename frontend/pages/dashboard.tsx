@@ -60,11 +60,18 @@ export default function Dashboard() {
       const formData = new FormData()
       formData.append('file', uploadFile)
       
+      // Show progress for large files
+      const fileSizeMB = uploadFile.size / (1024 * 1024)
+      if (fileSizeMB > 5) {
+        showSuccess(`Uploading large file (${fileSizeMB.toFixed(1)}MB)... This may take a moment.`)
+      }
+      
       // Use the original proxy upload with better error handling
       await axios.post('/api/proxy-upload', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 120000 // 2 minute timeout for large files
       })
       
       setUploadFile(null)
@@ -72,7 +79,11 @@ export default function Dashboard() {
       showSuccess(`Uploaded ${uploadFile.name} successfully!`)
     } catch (error: any) {
       console.error('Upload error:', error)
-      showError('Upload failed', error.response?.data?.detail || error.message)
+      if (error.code === 'ECONNABORTED') {
+        showError('Upload timeout', 'File is too large or taking too long to process. Try a smaller file.')
+      } else {
+        showError('Upload failed', error.response?.data?.detail || error.message)
+      }
     } finally {
       setLoading(false)
     }

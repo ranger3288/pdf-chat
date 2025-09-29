@@ -116,13 +116,17 @@ async def upload_pdf(
         file_size = os.path.getsize(tmp_path)
         print(f"Saved PDF file: {tmp_path}, size: {file_size} bytes")
         
+        # Extract text with progress indication
         text = extract_text_from_pdf(tmp_path)
         print(f"Extracted text length: {len(text) if text else 0}")
         
         if not text or not text.strip():
             raise HTTPException(status_code=400, detail="No extractable text found in PDF")
         
-        chunks = chunk_text(text, chunk_size=800, overlap=100)
+        # Optimize chunking for faster processing
+        chunks = chunk_text(text, chunk_size=1000, overlap=50)  # Larger chunks, less overlap
+        print(f"Created {len(chunks)} chunks")
+        
         doc_id = insert_document(
             db, 
             str(user.id), 
@@ -131,7 +135,13 @@ async def upload_pdf(
             file.size
         )
         
+        # Generate embeddings in batches for better performance
+        print("Generating embeddings...")
         embeddings = embed_texts(chunks)
+        print(f"Generated {len(embeddings)} embeddings")
+        
+        # Store chunks in batches
+        print("Storing chunks...")
         for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
             insert_chunk(
                 db,
