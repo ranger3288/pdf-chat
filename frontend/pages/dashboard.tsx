@@ -60,7 +60,8 @@ export default function Dashboard() {
       const formData = new FormData()
       formData.append('file', uploadFile)
       
-      await axios.post('/api/proxy-upload', formData, {
+      // Use the new direct upload API that handles larger files
+      await axios.post('/api/direct-upload', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data'
         }
