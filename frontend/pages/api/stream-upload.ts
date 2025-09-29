@@ -1,12 +1,10 @@
-// frontend/pages/api/direct-upload.ts
+// frontend/pages/api/stream-upload.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '100mb',
-    },
+    bodyParser: false, // Disable body parsing to handle large files
   },
 }
 
@@ -24,16 +22,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const backend = process.env.BACKEND_URL || 'http://localhost:8000'
     const url = `${backend}/api/upload`
     
-    // Forward the request directly to backend
+    // Stream the request directly to backend
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'X-User-Email': session.user.email,
         'X-User-Name': session.user.name || 'Unknown User',
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || 'your-internal-secret-change-in-production',
-        // Don't set Content-Type, let fetch set it with boundary
+        'Content-Type': req.headers['content-type'] || 'multipart/form-data',
+        'Content-Length': req.headers['content-length'] || '',
       },
-      body: req.body
+      body: req // Stream the request directly
     })
     
     if (!response.ok) {
@@ -49,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(response.status).json(data)
     
   } catch (error) {
-    console.error('Direct upload error:', error)
+    console.error('Stream upload error:', error)
     res.status(500).json({ message: 'Internal server error' })
   }
 }

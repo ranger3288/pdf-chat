@@ -4,6 +4,9 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "functions": {
+    "pages/api/stream-upload.ts": {
+      "maxDuration": 60
+    },
     "pages/api/direct-upload.ts": {
       "maxDuration": 30
     },
