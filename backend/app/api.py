@@ -16,6 +16,9 @@ from .database import get_db, User, Document, ChatSession, ChatMessage, create_t
 
 app = FastAPI()
 
+# Configure file upload limits
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+
 # Enable CORS
 allowed_origins = [
     "http://localhost:3000",  # Local development
@@ -40,12 +43,7 @@ app.add_middleware(
 # Create tables on startup
 @app.on_event("startup")
 async def startup_event():
-    try:
-        create_tables()
-        print("✅ Database tables created successfully")
-    except Exception as e:
-        print(f"⚠️  Warning: Could not create database tables: {e}")
-        print("This may be normal if the database is not yet available.")
+    create_tables()
 
 client = get_openai_client()
 CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-3.5-turbo")
@@ -88,11 +86,7 @@ class ChatCreate(BaseModel):
 
 @app.get("/api/healthz")
 def health():
-    return {"ok": True, "status": "healthy"}
-
-@app.get("/")
-def root():
-    return {"message": "PDF Chat API is running", "status": "ok"}
+    return {"ok": True}
 
 @app.post("/api/upload")
 async def upload_pdf(
@@ -104,6 +98,13 @@ async def upload_pdf(
     """Upload a PDF document"""
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Please upload a PDF")
+    
+    # Check file size
+    if file.size and file.size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413, 
+            detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB"
+        )
     
     # Save to temp file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
