@@ -112,8 +112,14 @@ async def upload_pdf(
         shutil.copyfileobj(file.file, tmp)
     
     try:
+        # Debug: Check if file was saved correctly
+        file_size = os.path.getsize(tmp_path)
+        print(f"Saved PDF file: {tmp_path}, size: {file_size} bytes")
+        
         text = extract_text_from_pdf(tmp_path)
-        if not text.strip():
+        print(f"Extracted text length: {len(text) if text else 0}")
+        
+        if not text or not text.strip():
             raise HTTPException(status_code=400, detail="No extractable text found in PDF")
         
         chunks = chunk_text(text, chunk_size=800, overlap=100)
