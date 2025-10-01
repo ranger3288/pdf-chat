@@ -143,7 +143,7 @@ export default function Dashboard() {
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        <h1 style={{ margin: 0, color: colors.textPrimary }}>PDF Chat Dashboard</h1>
+        <h1 style={{ margin: 0, color: colors.textPrimary }}>DocQ&A Dashboard</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {session.user?.image && (
