@@ -96,7 +96,7 @@ export default function Home() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
           animation: 'bounce 2s ease-in-out infinite'
         }}>
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -147,17 +147,17 @@ export default function Home() {
             fontWeight: '600',
             transition: 'all 0.3s ease',
             width: '100%',
-            boxShadow: '0 8px 25px rgba(66, 133, 244, 0.3)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             position: 'relative',
             overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)'
-            e.currentTarget.style.boxShadow = '0 12px 35px rgba(66, 133, 244, 0.4)'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 8px 25px rgba(66, 133, 244, 0.3)'
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

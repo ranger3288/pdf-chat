@@ -266,22 +266,20 @@ export default function ChatPage() {
               color: 'white',
               fontWeight: '600',
               fontSize: '14px',
-              boxShadow: documentId 
-                ? '0 8px 25px rgba(102, 126, 234, 0.3)'
-                : '0 4px 15px rgba(107, 114, 128, 0.2)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               transition: 'all 0.3s ease',
               opacity: documentId ? 1 : 0.6
             }}
             onMouseEnter={(e) => {
               if (documentId) {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
               }
             }}
             onMouseLeave={(e) => {
               if (documentId) {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)'
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
               }
             }}
           >
@@ -298,7 +296,7 @@ export default function ChatPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 25px rgba(79, 172, 254, 0.3)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               animation: 'bounce 3s ease-in-out infinite'
             }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -337,16 +335,16 @@ export default function ChatPage() {
                 gap: '0.5rem',
                 fontWeight: '600',
                 fontSize: '14px',
-                boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 12px 35px rgba(16, 185, 129, 0.4)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)'
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
               }}
             >
               Sources ({sources.length})
@@ -368,16 +366,16 @@ export default function ChatPage() {
               gap: '0.5rem',
               fontWeight: '600',
               fontSize: '14px',
-              boxShadow: '0 8px 25px rgba(239, 68, 68, 0.3)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               transition: 'all 0.3s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 12px 35px rgba(239, 68, 68, 0.4)'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.3)'
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
             }}
             title="Delete this chat"
           >
@@ -521,15 +519,13 @@ export default function ChatPage() {
                     padding: '1rem 1.5rem',
                     borderRadius: message.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
                     background: message.role === 'user' 
-                      ? 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)'
+                      ? '#4285f4'
                       : theme === 'dark'
                         ? 'rgba(255,255,255,0.1)'
                         : 'rgba(255,255,255,0.8)',
                     backdropFilter: message.role === 'assistant' ? 'blur(10px)' : 'none',
                     color: message.role === 'user' ? 'white' : colors.textPrimary,
-                    boxShadow: message.role === 'user' 
-                      ? '0 8px 25px rgba(66, 133, 244, 0.3)'
-                      : '0 8px 25px rgba(0,0,0,0.1)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                     wordWrap: 'break-word',
                     border: message.role === 'assistant' 
                       ? `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`
@@ -649,21 +645,19 @@ export default function ChatPage() {
               gap: '0.5rem',
               fontWeight: '600',
               fontSize: '14px',
-              boxShadow: inputValue.trim() && !loading 
-                ? '0 8px 25px rgba(66, 133, 244, 0.3)'
-                : '0 4px 15px rgba(107, 114, 128, 0.2)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               transition: 'all 0.3s ease'
             }}
             onMouseEnter={(e) => {
               if (inputValue.trim() && !loading) {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 12px 35px rgba(66, 133, 244, 0.4)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
               }
             }}
             onMouseLeave={(e) => {
               if (inputValue.trim() && !loading) {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(66, 133, 244, 0.3)'
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
               }
             }}
           >

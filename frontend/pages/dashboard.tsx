@@ -190,7 +190,7 @@ export default function Dashboard() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             animation: 'bounce 3s ease-in-out infinite'
           }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -291,7 +291,7 @@ export default function Dashboard() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
               <Upload size={20} color="white" />
             </div>
@@ -366,14 +366,14 @@ export default function Dashboard() {
               }}
               onMouseEnter={(e) => {
                 if (uploadFile) {
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 12px 35px rgba(16, 185, 129, 0.4)'
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (uploadFile) {
                   e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)'
+                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
                 }
               }}
             >
@@ -439,7 +439,7 @@ export default function Dashboard() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 25px rgba(240, 147, 251, 0.3)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
               <FileText size={20} color="white" />
             </div>
@@ -519,7 +519,7 @@ export default function Dashboard() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: '1rem',
-                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                   }}>
                     <FileText size={24} color="white" />
                   </div>
@@ -579,17 +579,17 @@ export default function Dashboard() {
                       justifyContent: 'center',
                       opacity: 0.8,
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)'
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '1'
-                      e.currentTarget.style.transform = 'scale(1.1)'
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)'
+                      e.currentTarget.style.transform = 'scale(1.05)'
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.opacity = '0.8'
                       e.currentTarget.style.transform = 'scale(1)'
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.3)'
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
                     }}
                     title="Delete document"
                   >
