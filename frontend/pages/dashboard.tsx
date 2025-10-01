@@ -149,7 +149,6 @@ export default function Dashboard() {
           ? 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%)',
         borderRadius: '50%',
-        animation: 'float 15s ease-in-out infinite',
         zIndex: 0
       }} />
       <div style={{
@@ -162,7 +161,6 @@ export default function Dashboard() {
           ? 'radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%)',
         borderRadius: '50%',
-        animation: 'pulse 8s ease-in-out infinite',
         zIndex: 0
       }} />
       
@@ -191,7 +189,6 @@ export default function Dashboard() {
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            animation: 'bounce 3s ease-in-out infinite'
           }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -622,18 +619,6 @@ export default function Dashboard() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
       <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.5; }
-          50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }

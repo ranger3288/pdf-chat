@@ -135,7 +135,6 @@ export default function DocumentPage() {
           ? 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%)',
         borderRadius: '50%',
-        animation: 'float 15s ease-in-out infinite',
         zIndex: 0
       }} />
       <div style={{
@@ -148,7 +147,6 @@ export default function DocumentPage() {
           ? 'radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%)',
         borderRadius: '50%',
-        animation: 'pulse 8s ease-in-out infinite',
         zIndex: 0
       }} />
       
@@ -208,7 +206,6 @@ export default function DocumentPage() {
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              animation: 'bounce 3s ease-in-out infinite'
             }}>
               <MessageSquare size={24} color="white" />
             </div>
@@ -563,18 +560,6 @@ export default function DocumentPage() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
       <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.5; }
-          50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }

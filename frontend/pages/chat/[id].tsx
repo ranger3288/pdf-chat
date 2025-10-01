@@ -180,18 +180,19 @@ export default function ChatPage() {
 
   return (
     <div style={{ 
-      height: '100vh', 
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       display: 'flex',
       flexDirection: 'column',
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       background: theme === 'dark' 
         ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
         : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
+      width: '100%',
+      height: '100%',
       overflow: 'hidden'
     }}>
       {/* Animated background elements */}
@@ -205,9 +206,7 @@ export default function ChatPage() {
           ? 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%)',
         borderRadius: '50%',
-        animation: 'float 15s ease-in-out infinite',
         zIndex: 0,
-        transform: 'translate(30%, -30%)'
       }} />
       <div style={{
         position: 'absolute',
@@ -219,9 +218,7 @@ export default function ChatPage() {
           ? 'radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%)',
         borderRadius: '50%',
-        animation: 'pulse 8s ease-in-out infinite',
         zIndex: 0,
-        transform: 'translate(-20%, 20%)'
       }} />
       
       {/* Header */}
@@ -297,7 +294,6 @@ export default function ChatPage() {
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              animation: 'bounce 3s ease-in-out infinite'
             }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -462,7 +458,8 @@ export default function ChatPage() {
         overflowY: 'auto',
         padding: '2rem',
         position: 'relative',
-        zIndex: 1
+        zIndex: 1,
+        minHeight: 0
       }}>
         {messages.length === 0 ? (
           <div style={{ 
@@ -700,18 +697,6 @@ export default function ChatPage() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
       <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.5; }
-          50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
