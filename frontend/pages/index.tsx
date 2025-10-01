@@ -32,22 +32,104 @@ export default function Home() {
       justifyContent: 'center', 
       alignItems: 'center', 
       height: '100vh',
-      fontFamily: 'system-ui, sans-serif',
-      backgroundColor: '#f5f5f5'
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      {/* Animated background elements */}
       <div style={{
-        backgroundColor: 'white',
+        position: 'absolute',
+        top: '-50%',
+        left: '-50%',
+        width: '200%',
+        height: '200%',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+        backgroundSize: '50px 50px',
+        animation: 'float 20s ease-in-out infinite',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'absolute',
+        top: '20%',
+        right: '-10%',
+        width: '300px',
+        height: '300px',
+        background: 'linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+        borderRadius: '50%',
+        animation: 'pulse 4s ease-in-out infinite',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '10%',
+        left: '-5%',
+        width: '200px',
+        height: '200px',
+        background: 'linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+        borderRadius: '50%',
+        animation: 'float 6s ease-in-out infinite reverse',
+        zIndex: 0
+      }} />
+      
+      <div style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
         padding: '3rem',
-        borderRadius: '12px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        borderRadius: '24px',
+        boxShadow: '0 25px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.2)',
         textAlign: 'center',
-        maxWidth: '400px',
-        width: '100%'
+        maxWidth: '420px',
+        width: '100%',
+        position: 'relative',
+        zIndex: 1,
+        border: '1px solid rgba(255,255,255,0.2)',
+        transform: 'translateY(0)',
+        transition: 'all 0.3s ease'
       }}>
-        <h1 style={{ marginBottom: '1rem', color: '#333' }}>DocQ&A</h1>
-        <p style={{ marginBottom: '2rem', color: '#666', lineHeight: '1.5' }}>
+        <div style={{
+          width: '80px',
+          height: '80px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '20px',
+          margin: '0 auto 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
+          animation: 'bounce 2s ease-in-out infinite'
+        }}>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M14 2V8H20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16 13H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16 17H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 9H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        
+        <h1 style={{ 
+          marginBottom: '1rem', 
+          color: '#2d3748',
+          fontSize: '2.5rem',
+          fontWeight: '700',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          letterSpacing: '-0.02em'
+        }}>DocQ&A</h1>
+        
+        <p style={{ 
+          marginBottom: '2.5rem', 
+          color: '#4a5568', 
+          lineHeight: '1.6',
+          fontSize: '1.1rem',
+          fontWeight: '400'
+        }}>
           Upload PDF documents and chat with them using AI. Sign in with Google to get started.
         </p>
+        
         <button 
           onClick={() => signIn('google')}
           style={{
@@ -55,22 +137,27 @@ export default function Home() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '12px',
-            padding: '12px 24px',
-            backgroundColor: '#4285f4',
+            padding: '16px 32px',
+            background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)',
             color: 'white',
             border: 'none',
-            borderRadius: '8px',
+            borderRadius: '12px',
             cursor: 'pointer',
             fontSize: '16px',
-            fontWeight: '500',
-            transition: 'background-color 0.2s',
-            width: '100%'
+            fontWeight: '600',
+            transition: 'all 0.3s ease',
+            width: '100%',
+            boxShadow: '0 8px 25px rgba(66, 133, 244, 0.3)',
+            position: 'relative',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#3367d6'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+            e.currentTarget.style.boxShadow = '0 12px 35px rgba(66, 133, 244, 0.4)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#4285f4'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 8px 25px rgba(66, 133, 244, 0.3)'
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -82,6 +169,21 @@ export default function Home() {
           Sign in with Google
         </button>
       </div>
+      
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 0.5; }
+          50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
     </div>
   )
 }

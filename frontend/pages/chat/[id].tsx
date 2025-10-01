@@ -68,7 +68,9 @@ export default function ChatPage() {
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
 
   async function loadChatDetails() {
@@ -181,18 +183,62 @@ export default function ChatPage() {
       height: '100vh', 
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: 'system-ui, sans-serif',
-      backgroundColor: colors.secondary
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      background: theme === 'dark' 
+        ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+        : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden'
     }}>
+      {/* Animated background elements */}
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        width: '600px',
+        height: '600px',
+        background: theme === 'dark' 
+          ? 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 15s ease-in-out infinite',
+        zIndex: 0,
+        transform: 'translate(30%, -30%)'
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '0',
+        left: '0',
+        width: '400px',
+        height: '400px',
+        background: theme === 'dark'
+          ? 'radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'pulse 8s ease-in-out infinite',
+        zIndex: 0,
+        transform: 'translate(-20%, 20%)'
+      }} />
+      
       {/* Header */}
       <header style={{
-        backgroundColor: colors.primary,
-        padding: '1rem 2rem',
-        borderBottom: `1px solid ${colors.border}`,
+        background: theme === 'dark'
+          ? 'rgba(30, 30, 50, 0.8)'
+          : 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        padding: '1.5rem 2rem',
+        borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        flexShrink: 0
+        flexShrink: 0,
+        position: 'relative',
+        zIndex: 1,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button 
@@ -207,85 +253,203 @@ export default function ChatPage() {
             }}
             disabled={!documentId}
             style={{
-              padding: '8px',
-              backgroundColor: 'transparent',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
+              padding: '12px 16px',
+              background: documentId 
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+              border: 'none',
+              borderRadius: '12px',
               cursor: documentId ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              opacity: documentId ? 1 : 0.6,
-              color: colors.textPrimary
+              color: 'white',
+              fontWeight: '600',
+              fontSize: '14px',
+              boxShadow: documentId 
+                ? '0 8px 25px rgba(102, 126, 234, 0.3)'
+                : '0 4px 15px rgba(107, 114, 128, 0.2)',
+              transition: 'all 0.3s ease',
+              opacity: documentId ? 1 : 0.6
+            }}
+            onMouseEnter={(e) => {
+              if (documentId) {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (documentId) {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)'
+              }
             }}
           >
             <ArrowLeft size={16} />
             {documentId ? 'Back to Document Chats' : 'Loading...'}
           </button>
-          <h1 style={{ margin: 0, color: colors.textPrimary }}>Chat</h1>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 25px rgba(79, 172, 254, 0.3)',
+              animation: 'bounce 3s ease-in-out infinite'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h1 style={{ 
+              margin: 0, 
+              fontSize: '1.8rem',
+              fontWeight: '700',
+              background: theme === 'dark'
+                ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                : 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              // Fallback for browsers that don't support background-clip: text
+              color: theme === 'dark' ? '#4facfe' : '#2d3748'
+            }}>Chat</h1>
+          </div>
         </div>
         
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {sources.length > 0 && (
         <button
-          onClick={handleDeleteClick}
+              onClick={() => setShowSources(!showSources)}
           style={{
-            padding: '8px 12px',
-            backgroundColor: colors.error,
+                padding: '12px 16px',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
+                borderRadius: '12px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
-          }}
-          title="Delete this chat"
-        >
-          <Trash2 size={16} />
-          Delete Chat
+                gap: '0.5rem',
+                fontWeight: '600',
+                fontSize: '14px',
+                boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(16, 185, 129, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)'
+              }}
+            >
+              Sources ({sources.length})
+              {showSources ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
+          )}
         
-        {sources.length > 0 && (
           <button
-            onClick={() => setShowSources(!showSources)}
+            onClick={handleDeleteClick}
             style={{
-              padding: '8px 12px',
-              backgroundColor: '#f8f9fa',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              fontWeight: '600',
+              fontSize: '14px',
+              boxShadow: '0 8px 25px rgba(239, 68, 68, 0.3)',
+              transition: 'all 0.3s ease'
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 12px 35px rgba(239, 68, 68, 0.4)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.3)'
+            }}
+            title="Delete this chat"
           >
-            Sources ({sources.length})
-            {showSources ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <Trash2 size={16} />
+            Delete Chat
           </button>
-        )}
+        </div>
       </header>
 
       {/* Sources Panel */}
       {showSources && sources.length > 0 && (
         <div style={{
-          backgroundColor: '#f8f9fa',
-          padding: '1rem 2rem',
-          borderBottom: '1px solid #e0e0e0',
+          background: theme === 'dark'
+            ? 'rgba(30, 30, 50, 0.8)'
+            : 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(20px)',
+          padding: '1.5rem 2rem',
+          borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
           maxHeight: '200px',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          position: 'relative',
+          zIndex: 1
         }}>
-          <h3 style={{ margin: '0 0 1rem 0', fontSize: '14px', color: '#666' }}>Sources</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <h3 style={{ 
+            margin: '0 0 1rem 0', 
+            fontSize: '16px', 
+            color: colors.textPrimary,
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <div style={{
+              width: '24px',
+              height: '24px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            Sources
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {sources.map((source, index) => (
               <div key={index} style={{
-                padding: '0.5rem',
-                backgroundColor: 'white',
-                borderRadius: '4px',
-                border: '1px solid #ddd'
+                padding: '1rem',
+                background: theme === 'dark' 
+                  ? 'rgba(255,255,255,0.05)' 
+                  : 'rgba(255,255,255,0.7)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px',
+                border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+                transition: 'all 0.3s ease'
               }}>
-                <div style={{ fontSize: '12px', color: '#666', marginBottom: '0.25rem' }}>
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: colors.textSecondary, 
+                  marginBottom: '0.5rem',
+                  fontWeight: '500'
+                }}>
                   Source {index + 1} (Score: {source.score.toFixed(3)})
                 </div>
-                <div style={{ fontSize: '14px' }}>
+                <div style={{ 
+                  fontSize: '14px',
+                  color: colors.textPrimary,
+                  lineHeight: '1.5'
+                }}>
                   {source.text.substring(0, 200)}...
                 </div>
               </div>
@@ -298,18 +462,47 @@ export default function ChatPage() {
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '1rem 2rem',
-        backgroundColor: colors.secondary
+        padding: '2rem',
+        position: 'relative',
+        zIndex: 1
       }}>
         {messages.length === 0 ? (
           <div style={{ 
             display: 'flex', 
+            flexDirection: 'column',
             justifyContent: 'center', 
             alignItems: 'center', 
-            height: '100%',
-            color: colors.textSecondary
+            minHeight: '400px',
+            color: colors.textSecondary,
+            textAlign: 'center',
+            padding: '2rem'
           }}>
-            Start a conversation by asking a question about the document
+            <div style={{
+              width: '120px',
+              height: '120px',
+              background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+              borderRadius: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 2rem',
+              border: `2px dashed ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`
+            }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h3 style={{ 
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              margin: '0 0 0.5rem 0',
+              color: colors.textPrimary
+            }}>Start a conversation</h3>
+            <p style={{ 
+              fontSize: '1rem',
+              margin: 0,
+              opacity: 0.7
+            }}>Ask a question about the document to begin chatting</p>
           </div>
         ) : (
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -317,7 +510,7 @@ export default function ChatPage() {
               <div
                 key={message.id}
                 style={{
-                  marginBottom: '1rem',
+                  marginBottom: '1.5rem',
                   display: 'flex',
                   justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start'
                 }}
@@ -325,20 +518,36 @@ export default function ChatPage() {
                 <div
                   style={{
                     maxWidth: '70%',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '12px',
-                    backgroundColor: message.role === 'user' ? colors.userMessage : colors.assistantMessage,
-                    color: message.role === 'user' ? colors.messageTextUser : colors.messageText,
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                    wordWrap: 'break-word'
+                    padding: '1rem 1.5rem',
+                    borderRadius: message.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+                    background: message.role === 'user' 
+                      ? 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)'
+                      : theme === 'dark'
+                        ? 'rgba(255,255,255,0.1)'
+                        : 'rgba(255,255,255,0.8)',
+                    backdropFilter: message.role === 'assistant' ? 'blur(10px)' : 'none',
+                    color: message.role === 'user' ? 'white' : colors.textPrimary,
+                    boxShadow: message.role === 'user' 
+                      ? '0 8px 25px rgba(66, 133, 244, 0.3)'
+                      : '0 8px 25px rgba(0,0,0,0.1)',
+                    wordWrap: 'break-word',
+                    border: message.role === 'assistant' 
+                      ? `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`
+                      : 'none',
+                    transition: 'all 0.3s ease'
                   }}
                 >
-                  <div style={{ whiteSpace: 'pre-wrap' }}>{message.content}</div>
+                  <div style={{ 
+                    whiteSpace: 'pre-wrap',
+                    lineHeight: '1.6',
+                    fontSize: '15px'
+                  }}>{message.content}</div>
                   <div style={{ 
                     fontSize: '0.75rem', 
                     opacity: 0.7, 
-                    marginTop: '0.5rem',
-                    textAlign: 'right'
+                    marginTop: '0.75rem',
+                    textAlign: 'right',
+                    fontWeight: '500'
                   }}>
                     {new Date(message.created_at).toLocaleTimeString()}
                   </div>
@@ -348,12 +557,27 @@ export default function ChatPage() {
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <div style={{
-                  padding: '0.75rem 1rem',
-                  borderRadius: '12px',
-                  backgroundColor: colors.assistantMessage,
+                  padding: '1rem 1.5rem',
+                  borderRadius: '20px 20px 20px 4px',
+                  background: theme === 'dark'
+                    ? 'rgba(255,255,255,0.1)'
+                    : 'rgba(255,255,255,0.8)',
+                  backdropFilter: 'blur(10px)',
                   color: colors.textSecondary,
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTop: '2px solid currentColor',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
                   Thinking...
                 </div>
               </div>
@@ -365,49 +589,102 @@ export default function ChatPage() {
 
       {/* Input */}
       <div style={{
-        padding: '1rem 2rem',
-        backgroundColor: colors.primary,
-        borderTop: `1px solid ${colors.border}`,
-        flexShrink: 0
+        padding: '2rem',
+        background: theme === 'dark'
+          ? 'rgba(30, 30, 50, 0.8)'
+          : 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+        flexShrink: 0,
+        position: 'relative',
+        zIndex: 1
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: '1rem' }}>
-          <textarea
-            value={inputValue}
-            onChange={e => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask a question about the document..."
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '8px',
-              resize: 'none',
-              minHeight: '40px',
-              maxHeight: '120px',
-              fontFamily: 'inherit',
-              fontSize: '16px',
-              backgroundColor: colors.primary,
-              color: colors.textPrimary
-            }}
-          />
+          <div style={{ 
+            flex: 1,
+            position: 'relative',
+            background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+            borderRadius: '16px',
+            border: `2px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            padding: '1rem',
+            transition: 'all 0.3s ease'
+          }}>
+            <textarea
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask a question about the document..."
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '0',
+                border: 'none',
+                background: 'transparent',
+                resize: 'none',
+                minHeight: '24px',
+                maxHeight: '120px',
+                fontFamily: 'inherit',
+                fontSize: '16px',
+                color: colors.textPrimary,
+                outline: 'none',
+                lineHeight: '1.5'
+              }}
+            />
+          </div>
+          
           <button
             onClick={sendMessage}
             disabled={loading || !inputValue.trim()}
             style={{
-              padding: '0.75rem 1rem',
-              backgroundColor: inputValue.trim() && !loading ? colors.userMessage : colors.textMuted,
+              padding: '12px 24px',
+              background: inputValue.trim() && !loading 
+                ? 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)'
+                : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
               color: 'white',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '16px',
               cursor: inputValue.trim() && !loading ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              fontWeight: '600',
+              fontSize: '14px',
+              boxShadow: inputValue.trim() && !loading 
+                ? '0 8px 25px rgba(66, 133, 244, 0.3)'
+                : '0 4px 15px rgba(107, 114, 128, 0.2)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (inputValue.trim() && !loading) {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(66, 133, 244, 0.4)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (inputValue.trim() && !loading) {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(66, 133, 244, 0.3)'
+              }
             }}
           >
-            <Send size={16} />
-            Send
+            {loading ? (
+              <>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderTop: '2px solid white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send size={16} />
+                Send
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -427,6 +704,25 @@ export default function ChatPage() {
 
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
+      
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 0.5; }
+          50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }
