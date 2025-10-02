@@ -14,6 +14,21 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 security = HTTPBearer()
 
+def get_allowed_test_users() -> list[str]:
+    """Get list of allowed test user emails from environment variable"""
+    allowed_users = os.getenv("ALLOWED_TEST_USERS")
+    if not allowed_users:
+        print("WARNING: ALLOWED_TEST_USERS environment variable not set. No users will be allowed.")
+        return []
+    return [email.strip().lower() for email in allowed_users.split(",")]
+
+def is_test_user(email: str) -> bool:
+    """Check if the email belongs to an allowed test user"""
+    allowed_users = get_allowed_test_users()
+    if not allowed_users:
+        return False
+    return email.lower() in allowed_users
+
 class GoogleAuth:
     def __init__(self):
         self.client_id = os.getenv("GOOGLE_CLIENT_ID")
@@ -71,10 +86,20 @@ async def get_current_user(
     
     try:
         google_user_info = await google_auth.verify_token(token)
+        user_email = google_user_info["email"]
+        
+        # Check if user is an allowed test user
+        if not is_test_user(user_email):
+            print(f"Access denied for unauthorized user: {user_email}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access restricted to test users only"
+            )
+        
         user = db.query(User).filter(User.google_id == google_user_info["id"]).first()
         
         if not user:
-            # Create new user
+            # Create new user (only if they're a test user)
             user = User(
                 google_id=google_user_info["id"],
                 email=google_user_info["email"],
@@ -86,6 +111,9 @@ async def get_current_user(
             db.refresh(user)
         
         return user
+    except HTTPException:
+        # Re-raise HTTP exceptions (like our 403 Forbidden)
+        raise
     except Exception as e:
         print(f"Authentication error: {e}")  # Debug logging
         raise HTTPException(
